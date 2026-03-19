@@ -1,12 +1,16 @@
 # Team Watch
 
-An interactive force-directed graph visualizer for exploring, filtering, and editing team/company data. Built with React, D3.js, TypeScript, and Vite.
+A visual explorer and editor for team data scraped from the BOCRA Hackathon registration site. Built with React, D3.js, TypeScript, and Vite.
 
 ![Graph Overview](pictures/graph-overview.png)
 
-## Overview
+## Background
 
-Team Graph renders a collection of teams (and companies) as a zoomable, force-directed bubble graph. Each node represents a team — its size scales with member count, and its shape/color encodes metadata like validity, company status, and filter matches.
+While browsing the BOCRA Hackathon site on SkillsRanker, I noticed that every registered team was rendered using an identical HTML structure — each team sat inside a `<div class="row">` with `col-md-6` columns, following the exact same card layout. The markup was completely uniform: team name, member table, avatar images, profile links — all in the same predictable DOM structure.
+
+This consistency made it trivially scrapeable. I wrote a browser console script (`scripts/scrape.js`) that walks the DOM, extracts every team's name, members, profile URLs, GitHub avatars, and IDs, then dumps the entire dataset as JSON to the clipboard. The result is `sample.json` — a complete snapshot of every team registered on the site.
+
+With the raw data in hand, I built **Team Watch** as both a **visualizer** and a **visual editor** on top of it — a way to explore the full hackathon roster at a glance, filter and search through teams, validate member counts, and annotate teams with metadata like validity and company status.
 
 ## Features
 
@@ -21,7 +25,7 @@ Team Graph renders a collection of teams (and companies) as a zoomable, force-di
 |---|---|
 | **Circle** | Team |
 | **Diamond (rhombus)** | Company |
-| **Red fill** | Member count out of valid range (not 4–10) |
+| **Red fill** | Member count outside the valid range (not 4–10) |
 | **Red stroke ring** | Invalid team (takes priority over other rings) |
 | **Green stroke ring** | Passes current filter criteria |
 | **Dashed ring** | Unverified validity (`isValid === null`) |
@@ -39,8 +43,8 @@ The sidebar provides a full suite of filter controls to narrow down and explore 
 - **Validity filter** — all / valid / invalid / unknown.
 - **Type filter** — all / teams / companies.
 - **Hide invalid** — removes invalid teams from the graph.
-- **Hide filtered** — hides nodes that *match* the current filter.
-- **Hide not filtered** — hides nodes that *don't match* the current filter (isolates results).
+- **Hide filtered** — hides nodes that *match* the current filter criteria.
+- **Hide not filtered** — hides nodes that *don't match* the current filter criteria (isolates your results).
 
 Below is an example of the graph with active filters and the sidebar open:
 
@@ -55,7 +59,7 @@ Toggle **Hide invalid** to remove all teams marked as invalid from the graph, le
 ### Detail Panel
 Click any node to open a slide-in panel with three tabs:
 - **View** — member list with avatars, profile links, GitHub links, and company details.
-- **Edit** — modify team name, member count, validity, company status, and company details. Changes are live and persisted to localStorage.
+- **Edit** — modify team name, member count, validity, company status, and company details. Changes are applied live and persisted to localStorage.
 - **JSON** — raw JSON view with copy-to-clipboard.
 
 ### Bookmarks
@@ -63,15 +67,43 @@ Click any node to open a slide-in panel with three tabs:
 - Bookmarks persist across sessions via localStorage.
 
 ### Data Management
-- **Sample data** — ships with a bundled `sample.json` dataset.
+- **Sample data** — ships with the scraped `sample.json` dataset from the BOCRA Hackathon site.
 - **Load custom JSON** — import your own team data file (must be an array of `TeamData` objects).
 - **Export** — download the current working dataset as JSON.
-- **Reset to sample** — discard edits and revert to built-in data.
+- **Reset to sample** — discard edits and revert to the original scraped data.
 - Data source indicator in the top bar shows whether you're viewing sample or custom data.
 
 ### Theming
 - Dark mode (default) and light mode toggle in the top bar.
 - All colors use CSS custom properties for consistent theming.
+
+## Scraper
+
+`scripts/scrape.js` is a browser console script purpose-built for the BOCRA Hackathon site on SkillsRanker. The site renders every team inside a uniform card layout:
+
+```html
+<div class="row">
+  <div class="col-md-6">
+    <div class="card">
+      <p class="font-weight-bolder">Team Name</p>
+      <table>
+        <tbody>
+          <tr><!-- member row with avatar, name, profile link --></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+```
+
+The script iterates over every `.row .col-md-6` column, extracts the team name from the card header, then walks each `<tbody tr>` to pull member names, profile URLs, avatar images, initials, and GitHub user IDs (parsed from `avatars.githubusercontent.com` URLs). The result is copied to the clipboard as a JSON array.
+
+### Usage
+
+1. Open the BOCRA Hackathon teams page in your browser.
+2. Open the browser console (F12 → Console).
+3. Paste the contents of `scripts/scrape.js` and press Enter.
+4. The scraped JSON is copied to your clipboard and logged to the console.
 
 ## Data Format
 
@@ -103,16 +135,12 @@ The app expects a JSON array of objects matching this schema:
 - Teams with `memberCount` outside 4–10 are automatically marked invalid.
 - Within range, validity can be manually set to valid, invalid, or unknown.
 
-## Scraper
-
-`scripts/scrape.js` is a browser console script for extracting team data from a SkillsRanker-style page. It scrapes team names, member names, profile URLs, avatars, and GitHub IDs, then copies the result as JSON to the clipboard.
-
 ## Tech Stack
 
 - **React 18** + **TypeScript**
 - **D3.js v7** — force simulation, zoom, SVG/Canvas rendering
 - **Vite** — dev server and bundler
-- **Tailwind CSS** — utility classes (used primarily for the design system tokens)
+- **Tailwind CSS** — utility classes and design system tokens
 - **IBM Plex Mono** — monospace font throughout the UI
 
 ## Project Structure
@@ -131,7 +159,7 @@ src/
 │   ├── sampleData.ts        # Loads bundled sample.json
 │   └── types.ts             # TypeScript interfaces and type definitions
 ├── data/
-│   └── sample.json          # Bundled sample dataset
+│   └── sample.json          # Scraped dataset from the BOCRA Hackathon site
 ├── pages/
 │   └── Index.tsx            # Root page — renders TeamGraph
 └── index.css                # CSS variables / design tokens (dark + light themes)
@@ -141,7 +169,7 @@ pictures/
 ├── filtered-with-sidebar.png # Graph with active filters applied
 └── hidden-invalid-teams.png # Graph after hiding invalid teams
 scripts/
-└── scrape.js                # Browser console scraper for data extraction
+└── scrape.js                # Browser console scraper for the BOCRA Hackathon site
 ```
 
 ## Getting Started
@@ -151,4 +179,4 @@ npm install
 npm run dev
 ```
 
-Open the preview and explore the sample dataset. Use the sidebar to filter, click nodes to inspect, and load your own JSON file via the top bar.
+Open the preview to explore the scraped hackathon dataset. Use the sidebar to filter teams, click nodes to inspect members, and export your annotated data as JSON.
