@@ -1,4 +1,4 @@
-# Team Graph
+# Team Watch
 
 An interactive force-directed graph visualizer for exploring, filtering, and editing team/company data. Built with React, D3.js, TypeScript, and Vite.
 
