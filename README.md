@@ -2,6 +2,8 @@
 
 An interactive force-directed graph visualizer for exploring, filtering, and editing team/company data. Built with React, D3.js, TypeScript, and Vite.
 
+![Graph Overview](pictures/graph-overview.png)
+
 ## Overview
 
 Team Graph renders a collection of teams (and companies) as a zoomable, force-directed bubble graph. Each node represents a team — its size scales with member count, and its shape/color encodes metadata like validity, company status, and filter matches.
@@ -27,6 +29,11 @@ Team Graph renders a collection of teams (and companies) as a zoomable, force-di
 | **★ above node** | Bookmarked |
 
 ### Filtering (Sidebar)
+
+The sidebar provides a full suite of filter controls to narrow down and explore the dataset.
+
+![Sidebar Filters](pictures/sidebar-filters.png)
+
 - **Search** — matches team names and individual member names.
 - **Member count range** — slider for min/max (4–10 valid range).
 - **Validity filter** — all / valid / invalid / unknown.
@@ -34,6 +41,16 @@ Team Graph renders a collection of teams (and companies) as a zoomable, force-di
 - **Hide invalid** — removes invalid teams from the graph.
 - **Hide filtered** — hides nodes that *match* the current filter.
 - **Hide not filtered** — hides nodes that *don't match* the current filter (isolates results).
+
+Below is an example of the graph with active filters and the sidebar open:
+
+![Filtered Graph with Sidebar](pictures/filtered-with-sidebar.png)
+
+### Hiding Invalid Teams
+
+Toggle **Hide invalid** to remove all teams marked as invalid from the graph, leaving only valid and unknown teams visible.
+
+![Graph with Invalid Teams Hidden](pictures/hidden-invalid-teams.png)
 
 ### Detail Panel
 Click any node to open a slide-in panel with three tabs:
@@ -118,6 +135,11 @@ src/
 ├── pages/
 │   └── Index.tsx            # Root page — renders TeamGraph
 └── index.css                # CSS variables / design tokens (dark + light themes)
+pictures/
+├── graph-overview.png       # Full graph with all teams visible
+├── sidebar-filters.png      # Sidebar filter controls
+├── filtered-with-sidebar.png # Graph with active filters applied
+└── hidden-invalid-teams.png # Graph after hiding invalid teams
 scripts/
 └── scrape.js                # Browser console scraper for data extraction
 ```
